@@ -1,0 +1,16 @@
+{
+  "type": "updateMsg",
+  "data": {
+	"time": 598
+    "location": {
+      "x": 48.690960391, 
+      "y": 21.258544922,
+	  "z": 48.690960391
+    }
+	"temperature": { 
+      "in": 15.68,
+	  "out": -41.56
+    }
+	"isburst": false
+  }
+}
