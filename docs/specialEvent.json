@@ -1,7 +1,8 @@
 {
-  "type": "parametersUpdate",
+  "type": "specialEvent",
   "data": {
-    "time": 123, // timestamp
+    "time": 123,
+    "event": "burst|landing|start|whatever",
     "parameters": [
       {
         "type": "position",
@@ -11,13 +12,6 @@
             {"alt": 48.00},
           ],
         "timestamp": 123 // Optional, if different from main
-      },
-      {
-        "type": "temperature",
-        "values": [
-          {"in": 15},
-          {"out": -40}
-        ]
       }
     ]
   }
