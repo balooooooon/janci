@@ -1,16 +1,16 @@
 {
-  "type": "parametersUpdate",
+  "flightHash": "0cc175b9c0f1b6a831c399e269772661",
   "data": {
-    "time": 123, // timestamp
+    "time": 1479490093,
     "parameters": [
       {
         "type": "position",
         "values": [
-            {"lat": 48.00},
-            {"lng": 48.00},
-            {"alt": 48.00},
+            {"lat": 48.457263},
+            {"lng": 19.158642},
+            {"alt": 12654.4}
           ],
-        "timestamp": 123 // Optional, if different from main
+        "timestamp": 1479490093
       },
       {
         "type": "temperature",
