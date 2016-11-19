@@ -33,6 +33,7 @@ while 1:
 			update['data']['parameters'].append(tmp)
 			json_data = json.dumps(update)
 			response = requests.post("http://balooooooon.tk/balon/api/dumb_json", json=json_data)
+			#print(response)
 	except ser.SerialException:
 		print('Data could not be read')
 	time.sleep(0.1)
