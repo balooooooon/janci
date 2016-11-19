@@ -1,24 +1,26 @@
-{
-  "flightHash": "0cc175b9c0f1b6a831c399e269772661",
-  "data": {
-    "time": 1479490093,
+{  
+  "flightHash":"0cc175b9c0f1b6a831c399e269772661"
+  "data":{  
+    "time":"9.00"
     "parameters": [
-      {
-        "type": "position",
-        "values": [
-            {"lat": 48.457263},
-            {"lng": 19.158642},
-            {"alt": 12654.4}
-          ],
-        "timestamp": 1479490093
+      {  
+        "type":"position",
+        "values":
+        {  
+            "lat":"0.000000",
+            "lng":"0.000000",
+            "alt":"0.000000"
+        },
+        "timestamp":"9.00"
       },
-      {
-        "type": "temperature",
-        "values": [
-          {"in": 15},
-          {"out": -40}
-        ]
-      }
-    ]
-  }
+        {  
+        "type":"temperature",
+        "values":
+        {  
+           "in":"26.60"
+           "out":"26.28",
+        }
+        }
+      ],
+   },
 }
