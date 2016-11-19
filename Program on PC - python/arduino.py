@@ -7,7 +7,7 @@ update = {}
 update['data'] = {}
 
 
-ser = serial.Serial('COM5', 9600, timeout=0.1)
+ser = serial.Serial('COM5', 9600, timeout=0.5)
 while 1:
 	try:
 		line=(ser.readline().decode("utf8"))
@@ -17,23 +17,24 @@ while 1:
 			line_parsed = line.split(",")
 			update['flightHash'] = '0cc175b9c0f1b6a831c399e269772661'
 			update['data']['time'] = line_parsed[0]
-			test1 = {}
-			test1['values'] = {}
-			test1['type'] = 'position'
-			test1['values']['lat'] = line_parsed[4]
-			test1['values']['lng'] = line_parsed[5]
-			test1['values']['alt'] = line_parsed[6]
-			test1['timestamp'] = line_parsed[0]
-			update['data']['parameters'].append(test1)
-			test2 = {}
-			test2['values'] = {}
-			test2['type'] = 'temperature'
-			test2['values']['in'] = line_parsed[2]
-			test2['values']['out'] = line_parsed[1]
-			update['data']['parameters'].append(test2)
+			tmp = {}
+			tmp['values'] = {}
+			tmp['type'] = 'position'
+			tmp['values']['lat'] = line_parsed[4]
+			tmp['values']['lng'] = line_parsed[5]
+			tmp['values']['alt'] = line_parsed[6]
+			tmp['timestamp'] = line_parsed[0]
+			update['data']['parameters'].append(tmp)
+			tmp = {}
+			tmp['values'] = {}
+			tmp['type'] = 'temperature'
+			tmp['values']['in'] = line_parsed[2]
+			tmp['values']['out'] = line_parsed[1]
+			update['data']['parameters'].append(tmp)
 			json_data = json.dumps(update)
-			print(json_data)
-			response = requests.post("http://posttestserver.com/post.php", json=json_data)
-	except ser.SerialTimeoutException:
+			response = requests.post("http://balooooooon.tk/balon/api/dumb_json", json=json_data)
+	except ser.SerialException:
 		print('Data could not be read')
 	time.sleep(0.1)
+	
+	#response = requests.post("http://posttestserver.com/post.php", json=json_data)
