@@ -9,9 +9,20 @@
 #define ARDUINO_GPS_RX 9 // GPS TX, Arduino RX pin
 #define ARDUINO_GPS_TX 8 // GPS RX, Arduino TX pin
 #define gpsPort ssGPS  // Alternatively, use Serial1 on the Leonardo
+#define ref 0.0001259 // 14 meters
 
 SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
+
+float oldlat = 0.0;
+float oldlng = 0.0;
+float aktlat = 0.0;
+float aktlng = 0.0;
+boolean validGPS = false;
+int times = 1;
+float reftimes;
+boolean isOk = false;
+
 float timer = 0.0;
 float timer2 = 0.0;
 float oldTime =0.0;
@@ -46,6 +57,27 @@ float kty(unsigned int port) {
        return (temp);
 }
 
+boolean isGpsValid()
+{
+  isOk = false;
+  reftimes = ref * times;
+    
+  if ((((oldlat - reftimes) <= aktlat) && (aktlat <= (oldlat + reftimes))) || (oldlat == 0))
+  {
+    if ((((oldlng - reftimes) <= aktlng) && (aktlng <= (oldlng + reftimes))) || (oldlng == 0))
+    {
+      isOk = true;
+      times = 1;
+    }
+    else
+      times++;
+  }
+  
+  oldlat = aktlat;
+  oldlng = aktlng;
+  return isOk;
+}
+
 void printTime()
 {
   Serial.print(tinyGPS.time.hour());
@@ -66,12 +98,23 @@ void Print_function()
   Serial.print(event.pressure);   //tlak
   Serial.print(",");
 
-  Serial.print(tinyGPS.location.lat(), 6); //lat
-  Serial.print(",");
-  Serial.print(tinyGPS.location.lng(), 6); //long
-  Serial.print(",");
-  Serial.print(tinyGPS.altitude.feet(), 6); //alt
-
+  if (isGpsValid())
+  {
+    Serial.print(aktlat, 6); //lat
+    Serial.print(",");
+    Serial.print(aktlng, 6); //long
+    Serial.print(",");
+    Serial.print(tinyGPS.altitude.feet(), 6); //alt
+  }
+  else
+  {
+    Serial.print("fail"); //lat
+    Serial.print(",");
+    Serial.print("fail"); //long
+    Serial.print(",");
+    Serial.print("fail"); //alt
+  }
+  
   Serial.print(",");
   printTime();
 }
@@ -102,6 +145,9 @@ void loop()
     
     while (gpsPort.available())
       tinyGPS.encode(gpsPort.read());
+
+    aktlat = tinyGPS.location.lat();
+    aktlng = tinyGPS.location.lng();
       
     Print_function();
   }
