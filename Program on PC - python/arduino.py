@@ -15,8 +15,8 @@ while 1:
 			update['data']['parameters'] = []
 			print(line)
 			line_parsed = line.split(",")
-			update['flightHash'] = '0cc175b9c0f1b6a831c399e269772661'
-			update['data']['time'] = line_parsed[0]
+			update['flightHash'] = 'a1d0c6e83f027327d8461063f4ac58a6'
+			update['data']['timestamp'] = line_parsed[0]
 			tmp = {}
 			tmp['values'] = {}
 			tmp['type'] = 'position'
@@ -32,8 +32,11 @@ while 1:
 			tmp['values']['out'] = line_parsed[1]
 			update['data']['parameters'].append(tmp)
 			json_data = json.dumps(update)
-			response = requests.post("http://balooooooon.tk/balon/api/dumb_json", json=json_data)
-			#print(response)
+			#response = requests.post("http://posttestserver.com/post.php", json=json_data, headers = {'content-type': 'application/json'})
+			response = requests.post("http://balooooooon.tk/balon/api/flight/42/telemetry", data=json_data, headers = {'Content-Type': 'application/json'})
+			print(json_data)
+			print(requests)
+			print(response)
 	except ser.SerialException:
 		print('Data could not be read')
 	time.sleep(0.1)
