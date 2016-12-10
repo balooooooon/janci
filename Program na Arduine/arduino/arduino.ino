@@ -3,6 +3,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
 #include <TinyGPS++.h> // Include the TinyGPS++ library
+#include <SD.h>
 #include <SoftwareSerial.h>
 
 #define GPS_BAUD 9600 // GPS module baud rate. GP3906 defaults to 9600.
@@ -11,6 +12,8 @@
 #define gpsPort ssGPS  // Alternatively, use Serial1 on the Leonardo
 #define ref 0.0001259 // 14 meters
 
+#define CS_PIN 10
+
 SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
 
@@ -18,10 +21,15 @@ float oldlat = 0.0;
 float oldlng = 0.0;
 float aktlat = 0.0;
 float aktlng = 0.0;
+float aktalt = 0.0;
+
 boolean validGPS = false;
 int times = 1;
 float reftimes;
 boolean isOk = false;
+
+float urtime = 0.0;
+File file;
 
 float timer = 0.0;
 float timer2 = 0.0;
@@ -35,6 +43,57 @@ sensors_event_t event;
 void Time_function()
 {
   timer2++;
+}
+
+void initializeSD()
+{
+  pinMode(CS_PIN, OUTPUT);
+  SD.begin();
+}
+
+int createFile(char filename[])
+{
+  file = SD.open(filename, FILE_WRITE);
+
+  if (file)
+  {
+    return 1;
+  } else
+  {
+    return 0;
+  }
+}
+
+int writeToFileFloat(float number)
+{
+  if (file)
+  {
+    file.println(number);
+    return 1;
+  } else
+  {
+    return 0;
+  }
+}
+
+int writeToFile(char text[])
+{
+  if (file)
+  {
+    file.print(text);
+    return 1;
+  } else
+  {
+    return 0;
+  }
+}
+
+void closeFile()
+{
+  if (file)
+  {
+    file.close();
+  }
 }
 
 float kty(unsigned int port) {
@@ -85,6 +144,7 @@ void printTime()
   Serial.print(tinyGPS.time.minute());
   Serial.print(":");
   Serial.println(tinyGPS.time.second());
+  urtime = tinyGPS.time.value();
 }
 
 void Print_function()
@@ -104,7 +164,8 @@ void Print_function()
     Serial.print(",");
     Serial.print(aktlng, 6); //long
     Serial.print(",");
-    Serial.print(tinyGPS.altitude.feet(), 6); //alt
+    aktalt = tinyGPS.altitude.feet();
+    Serial.print(aktalt, 6); //alt
   }
   else
   {
@@ -117,6 +178,8 @@ void Print_function()
   
   Serial.print(",");
   printTime();
+  
+  logGPSData();
 }
  
 void setup()
@@ -126,6 +189,11 @@ void setup()
   Timer1.initialize(500000);         // initialize timer1, and set a 1/2 second period
   //Timer1.pwm(9, 512);                // setup pwm on pin 9, 50% duty cycle
   Timer1.attachInterrupt(Time_function);  // attaches callback() as a timer overflow interrupt
+
+  initializeSD();
+  createFile("test.txt");
+  file.println("**************************************************\n");
+  closeFile();
   
   gpsPort.begin(GPS_BAUD);  
   bmp.begin();
@@ -151,4 +219,20 @@ void loop()
       
     Print_function();
   }
+}
+
+void logGPSData()
+{
+  createFile("test.txt");
+  writeToFileFloat(timer);
+  writeToFileFloat(aktlng);
+  writeToFileFloat(aktlat);
+  writeToFileFloat(aktalt);
+  writeToFileFloat(temp);
+  writeToFileFloat(temp2);
+  writeToFileFloat(event.pressure);
+  writeToFileFloat(urtime);
+  writeToFileFloat(tinyGPS.satellites.value());
+  file.println("\n");
+  closeFile(); 
 }
