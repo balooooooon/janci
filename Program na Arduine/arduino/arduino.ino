@@ -42,7 +42,7 @@ sensors_event_t event;
 
 void Time_function()
 {
-  timer2++;
+  timer+=5;
 }
 
 void initializeSD()
@@ -186,7 +186,7 @@ void setup()
 {
   Serial.begin(9600);
   
-  Timer1.initialize(500000);         // initialize timer1, and set a 1/2 second period
+  Timer1.initialize(5000000);         // initialize timer1, and set a 1/2 second period
   //Timer1.pwm(9, 512);                // setup pwm on pin 9, 50% duty cycle
   Timer1.attachInterrupt(Time_function);  // attaches callback() as a timer overflow interrupt
 
@@ -200,10 +200,8 @@ void setup()
 }
  
 void loop()
-{
-  timer = timer2 / 2;
-  
-  if ((timer != oldTime) || firstTime)
+{  
+  if ((timer == (oldTime+20)) || firstTime)
   {
     firstTime = false;
     oldTime = timer;
