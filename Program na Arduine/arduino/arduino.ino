@@ -10,7 +10,8 @@
 #define ARDUINO_GPS_RX 9 // GPS TX, Arduino RX pin
 #define ARDUINO_GPS_TX 8 // GPS RX, Arduino TX pin
 #define gpsPort ssGPS  // Alternatively, use Serial1 on the Leonardo
-#define ref 0.0001259 // 14 meters
+//#define ref 0.0001259 // 14 meters - pre 0,5 sekundove merania
+#define ref 0.005036 // 14 meters (pre 20 sekundove intervaly - 100km/h
 
 #define CS_PIN 10
 
@@ -54,6 +55,8 @@ void initializeSD()
 int createFile(char filename[])
 {
   file = SD.open(filename, FILE_WRITE);
+
+  Serial.println(file);
 
   if (file)
   {
@@ -221,7 +224,8 @@ void loop()
 
 void logGPSData()
 {
-  createFile("test.txt");
+  if (createFile("test.txt") == 1)
+  {
   writeToFileFloat(timer);
   writeToFileFloat(aktlng);
   writeToFileFloat(aktlat);
@@ -233,4 +237,7 @@ void logGPSData()
   writeToFileFloat(tinyGPS.satellites.value());
   file.println("\n");
   closeFile(); 
+  }
+  else
+    initializeSD();
 }
