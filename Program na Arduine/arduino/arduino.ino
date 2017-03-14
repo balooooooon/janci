@@ -7,13 +7,13 @@
 #include <SoftwareSerial.h>
 
 #define GPS_BAUD 9600 // GPS module baud rate. GP3906 defaults to 9600.
-#define ARDUINO_GPS_RX 9 // GPS TX, Arduino RX pin
-#define ARDUINO_GPS_TX 8 // GPS RX, Arduino TX pin
+#define ARDUINO_GPS_RX A9 // GPS TX, Arduino RX pin
+#define ARDUINO_GPS_TX A8 // GPS RX, Arduino TX pin
 #define gpsPort ssGPS  // Alternatively, use Serial1 on the Leonardo
 //#define ref 0.0001259 // 14 meters - pre 0,5 sekundove merania
 #define ref 0.005036 // 14 meters (pre 20 sekundove intervaly - 100km/h
 
-#define CS_PIN 10
+#define CS_PIN 53
 
 SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
@@ -49,14 +49,14 @@ void Time_function()
 void initializeSD()
 {
   pinMode(CS_PIN, OUTPUT);
-  SD.begin();
+  SD.begin(CS_PIN);
 }
 
 int createFile(char filename[])
 {
   file = SD.open(filename, FILE_WRITE);
 
-  Serial.println(file);
+  //Serial.println(file);
 
   if (file)
   {
@@ -224,8 +224,7 @@ void loop()
 
 void logGPSData()
 {
-  if (createFile("test.txt") == 1)
-  {
+  createFile("test.txt");
   writeToFileFloat(timer);
   writeToFileFloat(aktlng);
   writeToFileFloat(aktlat);
@@ -237,7 +236,7 @@ void logGPSData()
   writeToFileFloat(tinyGPS.satellites.value());
   file.println("\n");
   closeFile(); 
-  }
+  /*}
   else
-    initializeSD();
+    initializeSD();*/
 }

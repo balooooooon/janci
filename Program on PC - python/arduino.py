@@ -7,7 +7,7 @@ update = {}
 update['data'] = {}
 
 
-ser = serial.Serial('COM5', 9600, timeout=0.5)
+ser = serial.Serial('COM3', 9600, timeout=0.5)
 while 1:
 	try:
 		line=(ser.readline().decode("utf8"))
@@ -34,9 +34,9 @@ while 1:
 			json_data = json.dumps(update)
 			#response = requests.post("http://posttestserver.com/post.php", json=json_data, headers = {'content-type': 'application/json'})
 			response = requests.post("http://balooooooon.tk/balon/api/flight/42/telemetry", data=json_data, headers = {'Content-Type': 'application/json'})
-			print(json_data)
-			print(requests)
-			print(response)
+			#print(json_data)
+			#print(requests)
+			#print(response)
 	except ser.SerialException:
 		print('Data could not be read')
 	time.sleep(0.1)
