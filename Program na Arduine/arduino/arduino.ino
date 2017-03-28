@@ -161,15 +161,15 @@ void Print_function()
   Serial.print(event.pressure);   //tlak
   Serial.print(",");
 
-  if (isGpsValid())
-  {
+  /*if (isGpsValid())
+  {*/
     Serial.print(aktlat, 6); //lat
     Serial.print(",");
     Serial.print(aktlng, 6); //long
     Serial.print(",");
     aktalt = tinyGPS.altitude.feet();
     Serial.print(aktalt, 6); //alt
-  }
+  /*}
   else
   {
     Serial.print("fail"); //lat
@@ -177,12 +177,28 @@ void Print_function()
     Serial.print("fail"); //long
     Serial.print(",");
     Serial.print("fail"); //alt
-  }
+  }*/
+  Serial.print(",");
+  Serial.print(tinyGPS.satellites.value());
   
   Serial.print(",");
   printTime();
   
   logGPSData();
+}
+
+static void smartDelay(unsigned long ms)
+{
+  unsigned long start = millis();
+  do
+  {
+    // If data has come in from the GPS module
+    while (gpsPort.available())
+      tinyGPS.encode(gpsPort.read()); // Send it to the encode function
+    // tinyGPS.encode(char) continues to "load" the tinGPS object with new
+    // data coming in from the GPS module. As full NMEA strings begin to come in
+    // the tinyGPS library will be able to start parsing them for pertinent info
+  } while (millis() - start < ms);
 }
  
 void setup()
@@ -204,7 +220,7 @@ void setup()
  
 void loop()
 {  
-  if ((timer == (oldTime+20)) || firstTime)
+  if ((timer == (oldTime+5)) || firstTime) //+20 - pre 20 sekundove merania
   {
     firstTime = false;
     oldTime = timer;
@@ -212,8 +228,9 @@ void loop()
     bmp.getEvent(&event);
     bmp.getTemperature(&temp2);
     
-    while (gpsPort.available())
-      tinyGPS.encode(gpsPort.read());
+    /*while (gpsPort.available())
+      tinyGPS.encode(gpsPort.read());*/
+    smartDelay(1000); //delay + get GPS
 
     aktlat = tinyGPS.location.lat();
     aktlng = tinyGPS.location.lng();
