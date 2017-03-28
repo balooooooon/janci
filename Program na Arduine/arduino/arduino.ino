@@ -24,6 +24,8 @@ float aktlat = 0.0;
 float aktlng = 0.0;
 float aktalt = 0.0;
 
+boolean wdt = false;
+
 boolean validGPS = false;
 int times = 1;
 float reftimes;
@@ -41,8 +43,14 @@ float temp2;
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 sensors_event_t event;
 
+void(* resetFunc) (void) = 0;
+
 void Time_function()
 {
+  if (wdt)
+  {
+    resetFunc();
+  }
   timer+=5;
 }
 
@@ -146,7 +154,7 @@ void printTime()
   Serial.print(":");
   Serial.print(tinyGPS.time.minute());
   Serial.print(":");
-  Serial.println(tinyGPS.time.second());
+  Serial.print(tinyGPS.time.second());
   urtime = tinyGPS.time.value();
 }
 
@@ -178,11 +186,12 @@ void Print_function()
     Serial.print(",");
     Serial.print("fail"); //alt
   }*/
-  Serial.print(",");
-  Serial.print(tinyGPS.satellites.value());
-  
+   
   Serial.print(",");
   printTime();
+
+  Serial.print(",");
+  Serial.println(tinyGPS.satellites.value());
   
   logGPSData();
 }
@@ -209,6 +218,8 @@ void setup()
   //Timer1.pwm(9, 512);                // setup pwm on pin 9, 50% duty cycle
   Timer1.attachInterrupt(Time_function);  // attaches callback() as a timer overflow interrupt
 
+  wdt = false;
+  
   initializeSD();
   createFile("test.txt");
   file.println("**************************************************\n");
@@ -222,6 +233,8 @@ void loop()
 {  
   if ((timer == (oldTime+5)) || firstTime) //+20 - pre 20 sekundove merania
   {
+    wdt = true; //nastavenie WDT - v pripade ze by telo funkcie trvalo 5 sekund - program bude resetovany
+    
     firstTime = false;
     oldTime = timer;
     temp = kty(0);
@@ -236,6 +249,8 @@ void loop()
     aktlng = tinyGPS.location.lng();
       
     Print_function();
+
+    wdt = false;
   }
 }
 
