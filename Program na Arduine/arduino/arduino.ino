@@ -213,6 +213,9 @@ static void smartDelay(unsigned long ms)
 void setup()
 {
   Serial.begin(9600);
+
+  pinMode(4, INPUT);  //testovanie 4teho pinu na zasunutie karty
+  digitalWrite(4, HIGH);
   
   Timer1.initialize(5000000);         // initialize timer1, and set a 1/2 second period
   //Timer1.pwm(9, 512);                // setup pwm on pin 9, 50% duty cycle
@@ -256,6 +259,9 @@ void loop()
 
 void logGPSData()
 {
+  int connected_card = digitalRead(4);
+  if (connected_card)
+  {
   createFile("test.txt");
   writeToFileFloat(timer);
   writeToFileFloat(aktlng);
@@ -267,8 +273,8 @@ void logGPSData()
   writeToFileFloat(urtime);
   writeToFileFloat(tinyGPS.satellites.value());
   file.println("\n");
-  closeFile(); 
-  /*}
+  closeFile();
+  }
   else
-    initializeSD();*/
+    initializeSD();
 }
