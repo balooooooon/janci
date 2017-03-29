@@ -34,6 +34,11 @@ while 1:
 			tmp['values']['in'] = line_parsed[2]
 			tmp['values']['out'] = line_parsed[1]
 			update['data']['parameters'].append(tmp)
+			tmp = {}
+			tmp['values'] = {}
+			tmp['type'] = 'satellite'
+			tmp['values']['count'] = line_parsed[8]
+			update['data']['parameters'].append(tmp)
 			json_data = json.dumps(update)
 			#response = requests.post("http://posttestserver.com/post.php", json=json_data, headers = {'content-type': 'application/json'})
 			response = requests.post("http://live.balon.cf/api/flight/42/telemetry", data=json_data, headers = {'Content-Type': 'application/json'})
