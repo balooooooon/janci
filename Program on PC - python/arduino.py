@@ -15,7 +15,7 @@ while 1:
 		if (line != ""):
 			update['data']['parameters'] = []
 			print(line)
-			line_parsed = line.split(",")
+			line_parsed = line.strip().split(",")
 			update['flightHash'] = 'a1d0c6e83f027327d8461063f4ac58a6'
 			ts = datetime.datetime.utcnow()
 			#update['data']['timestamp'] = line_parsed[0]
