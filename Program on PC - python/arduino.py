@@ -2,6 +2,7 @@ import serial
 import time
 import json
 import requests
+import datetime
 
 update = {}
 update['data'] = {}
@@ -16,7 +17,9 @@ while 1:
 			print(line)
 			line_parsed = line.split(",")
 			update['flightHash'] = 'a1d0c6e83f027327d8461063f4ac58a6'
-			update['data']['timestamp'] = line_parsed[0]
+			ts = datetime.datetime.utcnow()
+			#update['data']['timestamp'] = line_parsed[0]
+			update['data']['timestamp'] = time.mktime(ts.timeduple())
 			tmp = {}
 			tmp['values'] = {}
 			tmp['type'] = 'position'
