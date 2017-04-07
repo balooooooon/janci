@@ -19,12 +19,28 @@ while 1:
 			update['flightHash'] = 'a1d0c6e83f027327d8461063f4ac58a6'
 
 			# lt = laptop time, at = arduino time
-			lt = datetime.utcnow() + timedelta(hours=2) 
+			lt = datetime.utcnow() 
 			at = datetime.strptime(line_parsed[7],"%H:%M:%S")
 			at = datetime.replace(at,year=lt.year,month=lt.month,day=lt.day)
 
 			#update['data']['timestamp'] = line_parsed[0]
-			update['data']['timestamp'] = time.mktime(ts.timeduple())
+			
+			tmp = {}
+			tmp['values'] = {}
+			tmp['type'] = 'time'
+			tmp['values']['timefromstart'] = line_parsed[0]
+			update['data']['parameters'].append(tmp)
+			
+			tmp = {}
+			tmp['values'] = {}
+			tmp['type'] = 'time'
+			if line_parsed[7]=='0:0:0':
+				update['data']['timestamp'] = time.mktime(lt.timetuple())
+			else:
+				update['data']['timestamp'] = time.mktime(at.timetuple())
+			#update['data']['timestamp'] = tmp			
+			#update['data']['timestamp'] = time.mktime(lt.timeduple())
+			
 			tmp = {}
 			tmp['values'] = {}
 			tmp['type'] = 'position'
@@ -44,19 +60,10 @@ while 1:
 			tmp['type'] = 'satellite'
 			tmp['values']['count'] = line_parsed[8]
 			update['data']['parameters'].append(tmp)
-			
-			tmp = {}
-			tmp['values'] = {}
-			tmp['type'] = 'time'
-			if line_parsed[7]=='0:0:0':
-				tmp['values']['actual_time'] = lt
-			else:
-				tmp['values']['actual_time'] = at
-			update['data']['parameters'].append(tmp)
 
 			json_data = json.dumps(update)
 			#response = requests.post("http://posttestserver.com/post.php", json=json_data, headers = {'content-type': 'application/json'})
-			response = requests.post("http://live.balon.cf/api/flight/42/telemetry", data=json_data, headers = {'Content-Type': 'application/json'})
+			response = requests.post("http://dev.balon.cf/api/flight/100/telemetry", data=json_data, headers = {'Content-Type': 'application/json'})
 			#print(json_data)
 			#print(requests)
 			print(response)
