@@ -11,7 +11,8 @@
 #define ARDUINO_GPS_TX A8 // GPS RX, Arduino TX pin
 #define gpsPort ssGPS  // Alternatively, use Serial1 on the Leonardo
 //#define ref 0.0001259 // 14 meters - pre 0,5 sekundove merania
-#define ref 0.005036 // 14 meters (pre 20 sekundove intervaly - 100km/h
+//#define ref 0.005036 // 556 meters (pre 20 sekundove intervaly - 100km/h
+#define ref 0.00125 // 139 meters (pre 5 sekundove intervaly - 100km/h
 
 #define CS_PIN 53
 
