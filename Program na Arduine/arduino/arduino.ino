@@ -23,6 +23,7 @@ float oldlng = 0.0;
 float aktlat = 0.0;
 float aktlng = 0.0;
 float aktalt = 0.0;
+int aktsat = 0;
 
 boolean wdt = false;
 
@@ -191,7 +192,7 @@ void Print_function()
   printTime();
 
   Serial.print(",");
-  Serial.println(tinyGPS.satellites.value());
+  Serial.println(aktsat);
   
   logGPSData();
 }
@@ -250,6 +251,7 @@ void loop()
 
     aktlat = tinyGPS.location.lat();
     aktlng = tinyGPS.location.lng();
+    aktsat = tinyGPS.satellites.value();
       
     Print_function();
 
@@ -271,7 +273,7 @@ void logGPSData()
   writeToFileFloat(temp2);
   writeToFileFloat(event.pressure);
   writeToFileFloat(urtime);
-  writeToFileFloat(tinyGPS.satellites.value());
+  writeToFileFloat(aktsat);
   file.println("\n");
   closeFile();
   }
