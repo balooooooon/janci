@@ -18,6 +18,7 @@
 SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
 
+float failgps = 0.0;
 float oldlat = 0.0;
 float oldlng = 0.0;
 float aktlat = 0.0;
@@ -143,9 +144,6 @@ boolean isGpsValid()
     else
       times++;
   }
-  
-  oldlat = aktlat;
-  oldlng = aktlng;
   return isOk;
 }
 
@@ -170,23 +168,26 @@ void Print_function()
   Serial.print(event.pressure);   //tlak
   Serial.print(",");
 
-  /*if (isGpsValid())
-  {*/
+  if (isGpsValid())
+  {
+    oldlat = aktlat;  //lastvalidGPSposition
+    oldlng = aktlng;
+    
     Serial.print(aktlat, 6); //lat
     Serial.print(",");
     Serial.print(aktlng, 6); //long
     Serial.print(",");
     aktalt = tinyGPS.altitude.feet();
     Serial.print(aktalt, 6); //alt
-  /*}
+  }
   else
   {
-    Serial.print("fail"); //lat
+    Serial.print(failgps, 6); //lat
     Serial.print(",");
-    Serial.print("fail"); //long
+    Serial.print(failgps, 6); //long
     Serial.print(",");
-    Serial.print("fail"); //alt
-  }*/
+    Serial.print(failgps, 6); //alt
+  }
    
   Serial.print(",");
   printTime();
