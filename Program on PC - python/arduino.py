@@ -41,14 +41,15 @@ while 1:
 			#update['data']['timestamp'] = tmp			
 			#update['data']['timestamp'] = time.mktime(lt.timeduple())
 			
-			tmp = {}
-			tmp['values'] = {}
-			tmp['type'] = 'position'
-			tmp['values']['lat'] = line_parsed[4]
-			tmp['values']['lng'] = line_parsed[5]
-			tmp['values']['alt'] = line_parsed[6]
-			#tmp['timestamp'] = line_parsed[7]
-			update['data']['parameters'].append(tmp)
+                        if line_parsed[4] != '0.000000' & line_parsed[5] != '0.000000' & line_parsed[6] != '0.000000':
+                            tmp = {}
+                            tmp['values'] = {}
+                            tmp['type'] = 'position'
+                            tmp['values']['lat'] = line_parsed[4]
+                            tmp['values']['lng'] = line_parsed[5]
+                            tmp['values']['alt'] = line_parsed[6]
+			    update['data']['parameters'].append(tmp)
+
 			tmp = {}
 			tmp['values'] = {}
 			tmp['type'] = 'temperature'
