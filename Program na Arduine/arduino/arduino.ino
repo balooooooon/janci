@@ -131,19 +131,33 @@ float kty(unsigned int port) {
 }
 
 boolean isGpsValid()
-{
+{ //treba doriesit osetrenie prvej suradnice - prvu povazujem za spravnu - resp spravna je aj 0.0.0 - osetrenie v pythone
   isOk = false;
   reftimes = ref * times;
-    
-  if ((((oldlat - reftimes) <= aktlat) && (aktlat <= (oldlat + reftimes))) || (oldlat == 0))
+
+  if ((aktlat == 0) && (aktlng == 0))
   {
-    if ((((oldlng - reftimes) <= aktlng) && (aktlng <= (oldlng + reftimes))) || (oldlng == 0))
+    isOk = true;
+    times = 1;
+    return isOk;
+  }
+    
+  if (((oldlat - reftimes) <= aktlat) && (aktlat <= (oldlat + reftimes)))
+  {
+    if (((oldlng - reftimes) <= aktlng) && (aktlng <= (oldlng + reftimes)))
     {
       isOk = true;
       times = 1;
     }
     else
+    {
       times++;
+      if (times == 13)  //v pripade ze sa nacita odveci prva suradnica, tak aby aspon po minute sa suradnica poslala
+      {
+        isOk = true;
+        times = 1;
+      }
+    }
   }
   return isOk;
 }
@@ -169,10 +183,10 @@ void Print_function()
   Serial.print(event.pressure);   //tlak
   Serial.print(",");
 
-  if (isGpsValid())
-  {
-    oldlat = aktlat;  //lastvalidGPSposition
-    oldlng = aktlng;
+  /*if (isGpsValid())
+  {*/
+    //oldlat = aktlat;  //lastvalidGPSposition
+    //oldlng = aktlng;
     
     Serial.print(aktlat, 6); //lat
     Serial.print(",");
@@ -180,15 +194,15 @@ void Print_function()
     Serial.print(",");
     aktalt = tinyGPS.altitude.feet();
     Serial.print(aktalt, 6); //alt
-  }
+  /*}
   else
-  {
-    Serial.print(failgps, 6); //lat
-    Serial.print(",");
-    Serial.print(failgps, 6); //long
-    Serial.print(",");
-    Serial.print(failgps, 6); //alt
-  }
+  {*/
+    //Serial.print(failgps, 6); //lat
+    //Serial.print(",");
+    //Serial.print(failgps, 6); //long
+    //Serial.print(",");
+    //Serial.print(failgps, 6); //alt
+  //}
    
   Serial.print(",");
   printTime();
