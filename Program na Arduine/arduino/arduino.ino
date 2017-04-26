@@ -192,7 +192,7 @@ void Print_function()
     Serial.print(",");
     Serial.print(aktlng, 6); //long
     Serial.print(",");
-    aktalt = tinyGPS.altitude.feet();
+    aktalt = tinyGPS.altitude.meters();
     Serial.print(aktalt, 6); //alt
   /*}
   else
