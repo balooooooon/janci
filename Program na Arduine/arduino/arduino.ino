@@ -5,6 +5,8 @@
 #include <TinyGPS++.h> // Include the TinyGPS++ library
 #include <SD.h>
 #include <SoftwareSerial.h>
+#include <string.h>
+#include <util/crc16.h>
 
 #define GPS_BAUD 9600 // GPS module baud rate. GP3906 defaults to 9600.
 #define ARDUINO_GPS_RX A9 // GPS TX, Arduino RX pin
@@ -14,10 +16,13 @@
 //#define ref 0.005036 // 556 meters (pre 20 sekundove intervaly - 100km/h
 #define ref 0.00125 // 139 meters (pre 5 sekundove intervaly - 100km/h
 
+#define RADIOPIN 14
 #define CS_PIN 53
 
 SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
+
+char datastring[80];
 
 float failgps = 0.0;
 float oldlat = 0.0;
@@ -48,13 +53,103 @@ sensors_event_t event;
 
 void(* resetFunc) (void) = 0;
 
+void rtty_txstring (char * string)
+{
+ 
+  /* Simple function to sent a char at a time to 
+     ** rtty_txbyte function. 
+    ** NB Each char is one byte (8 Bits)
+    */
+ 
+  char c;
+ 
+  c = *string++;
+ 
+  while ( c != '\0')
+  {
+    rtty_txbyte (c);
+    c = *string++;
+  }
+}
+ 
+void rtty_txbyte (char c)
+{
+  /* Simple function to sent each bit of a char to 
+    ** rtty_txbit function. 
+    ** NB The bits are sent Least Significant Bit first
+    **
+    ** All chars should be preceded with a 0 and 
+    ** proceded with a 1. 0 = Start bit; 1 = Stop bit
+    **
+    */
+ 
+  int i;
+ 
+  rtty_txbit (0); // Start bit
+ 
+  // Send bits for for char LSB first 
+ 
+  for (i=0;i<7;i++) // Change this here 7 or 8 for ASCII-7 / ASCII-8
+  {
+    if (c & 1) rtty_txbit(1); 
+ 
+    else rtty_txbit(0); 
+ 
+    c = c >> 1;
+ 
+  }
+ 
+  rtty_txbit (1); // Stop bit
+  rtty_txbit (1); // Stop bit
+}
+ 
+void rtty_txbit (int bit)
+{
+  if (bit)
+  {
+    // high
+    digitalWrite(RADIOPIN, HIGH);
+  }
+  else
+  {
+    // low
+    digitalWrite(RADIOPIN, LOW);
+ 
+  }
+ 
+  //                  delayMicroseconds(3370); // 300 baud
+  delayMicroseconds(10000); // For 50 Baud uncomment this and the line below. 
+  delayMicroseconds(10150); // You can't do 20150 it just doesn't work as the
+                            // largest value that will produce an accurate delay is 16383
+                            // See : http://arduino.cc/en/Reference/DelayMicroseconds
+ 
+}
+ 
+uint16_t gps_CRC16_checksum (char *string)
+{
+  size_t i;
+  uint16_t crc;
+  uint8_t c;
+ 
+  crc = 0xFFFF;
+ 
+  // Calculate checksum ignoring the first two $s
+  for (i = 2; i < strlen(string); i++)
+  {
+    c = string[i];
+    crc = _crc_xmodem_update (crc, c);
+  }
+ 
+  return crc;
+}   
+
 void Time_function()
 {
   if (wdt)
   {
     resetFunc();
   }
-  timer+=5;
+  timer+=20;
 }
 
 void initializeSD()
@@ -209,7 +304,8 @@ void Print_function()
 
   Serial.print(",");
   Serial.println(aktsat);
-  
+
+  sendRadio();
   logGPSData();
 }
 
@@ -233,8 +329,10 @@ void setup()
 
   pinMode(4, INPUT);  //testovanie 4teho pinu na zasunutie karty
   digitalWrite(4, HIGH);
+
+  pinMode(RADIOPIN,OUTPUT);
   
-  Timer1.initialize(5000000);         // initialize timer1, and set a 1/2 second period
+  Timer1.initialize(20000000);         // initialize timer1, and set a 1/2 second period
   //Timer1.pwm(9, 512);                // setup pwm on pin 9, 50% duty cycle
   Timer1.attachInterrupt(Time_function);  // attaches callback() as a timer overflow interrupt
 
@@ -251,10 +349,10 @@ void setup()
  
 void loop()
 {  
-  if ((timer == (oldTime+5)) || firstTime) //+20 - pre 20 sekundove merania
+  if ((timer == (oldTime+20)) || firstTime) //+20 - pre 20 sekundove merania
   {
     wdt = true; //nastavenie WDT - v pripade ze by telo funkcie trvalo 5 sekund - program bude resetovany
-    
+    Serial.print("som v loope");
     firstTime = false;
     oldTime = timer;
     temp = kty(0);
@@ -265,6 +363,8 @@ void loop()
       tinyGPS.encode(gpsPort.read());*/
     smartDelay(1000); //delay + get GPS
 
+    Serial.println("pred printom");
+    
     aktlat = tinyGPS.location.lat();
     aktlng = tinyGPS.location.lng();
     aktsat = tinyGPS.satellites.value();
@@ -272,6 +372,7 @@ void loop()
     Print_function();
 
     wdt = false;
+    Serial.println("vychadzam z loopu");
   }
 }
 
@@ -295,4 +396,16 @@ void logGPSData()
   }
   else
     initializeSD();
+}
+
+void sendRadio() //dorobit
+{
+  sprintf(datastring,"RTTY TEST BEACON RTTY TEST BEACON"); // Puts the text in the datastring
+  unsigned int CHECKSUM = gps_CRC16_checksum(datastring);  // Calculates the checksum for this datastring
+  char checksum_str[6];
+  sprintf(checksum_str, "*%04X\n", CHECKSUM);
+  strcat(datastring,checksum_str);
+ 
+  rtty_txstring (datastring);
+  delay(2000);
 }
