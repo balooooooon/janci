@@ -210,7 +210,7 @@ void Print_function()
   Serial.print(",");
   Serial.println(aktsat);
 
-  //sendRadio();
+  sendToSlave();
   logGPSData();
 }
 
@@ -231,6 +231,7 @@ static void smartDelay(unsigned long ms)
 void setup()
 {
   Serial.begin(9600);
+  Serial2.begin(9600);
 
   pinMode(4, INPUT);  //testovanie 4teho pinu na zasunutie karty
   digitalWrite(4, HIGH);
@@ -301,4 +302,34 @@ void logGPSData()
   }
   else
     initializeSD();
+}
+
+void sendToSlave()
+{
+  Serial2.print(timer);  //cas
+  Serial2.print(",");
+  Serial2.print(temp);   //teplota von
+  Serial2.print(",");
+  Serial2.print(temp2);  //teplota dnu
+  Serial2.print(",");
+  Serial2.print(event.pressure);   //tlak
+  Serial2.print(",");
+    
+    Serial2.print(aktlat, 6); //lat
+    Serial2.print(",");
+    Serial2.print(aktlng, 6); //long
+    Serial2.print(",");
+    Serial2.print(aktalt, 6); //alt
+   
+  Serial2.print(",");
+  
+  Serial2.print(tinyGPS.time.hour());
+  Serial2.print(":");
+  Serial2.print(tinyGPS.time.minute());
+  Serial2.print(":");
+  Serial2.print(tinyGPS.time.second());
+
+  Serial2.print(",");
+  Serial2.print(aktsat);
+  Serial2.print("$");
 }
