@@ -8,6 +8,7 @@
   #define debug_print(x)
 #endif
 
+#include "GsmModule.h"
 #include "FileHandler.h"
 
 #include <TimerOne.h>
@@ -196,6 +197,8 @@ void setup() {
   
   gpsPort.begin(GPS_BAUD);  
   bmp.begin();
+
+  gsmModuleInit();
 }
  
 void loop()
