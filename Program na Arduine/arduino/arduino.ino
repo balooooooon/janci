@@ -1,3 +1,13 @@
+#define DEBUG
+
+#ifdef DEBUG
+  #define debug_println(x) Serial.println(x)
+  #define debug_print(x) Serial.print(x)
+#else
+  #define debug_println(x)
+  #define debug_print(x)
+#endif
+
 #include "FileHandler.h"
 
 #include <TimerOne.h>
