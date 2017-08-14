@@ -50,59 +50,50 @@ sensors_event_t event;
 
 void(* resetFunc) (void) = 0;
 
-void Time_function()
-{
-  if (wdt)
-  {
-    resetFunc();
-  }
+void Time_function() {
+  if (wdt) resetFunc();
   timer+=5;
 }
 
 float kty(unsigned int port) {
-         float temp              = 82;
-         ADCSRA = 0x00;
-         ADCSRA = (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
-         ADMUX = 0x00;
-         ADMUX = (1<<REFS0);
-         ADMUX |= port;   
+  float temp = 82;
+  ADCSRA = 0x00;
+  ADCSRA = (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+  ADMUX = 0x00;
+  ADMUX = (1<<REFS0);
+  ADMUX |= port;   
 
-         for (int i=0;i<=64;i++)
-         {
-                 ADCSRA|=(1<<ADSC);
-                 while (ADCSRA & (1<<ADSC));
-                 temp += (ADCL + ADCH*256);
-         }
+  for (int i=0;i<=64;i++) {
+    ADCSRA|=(1<<ADSC);
+    while (ADCSRA & (1<<ADSC));
+    temp += (ADCL + ADCH*256);
+  }
 
-         temp /= 101;
-         temp -= 156;
-       return (temp);
+  temp /= 101;
+  temp -= 156;
+  return (temp);
 }
 
-boolean isGpsValid()
-{ //treba doriesit osetrenie prvej suradnice - prvu povazujem za spravnu - resp spravna je aj 0.0.0 - osetrenie v pythone
+boolean isGpsValid() { 
+  //treba doriesit osetrenie prvej suradnice - prvu povazujem za spravnu - resp spravna je aj 0.0.0 - osetrenie v pythone
   isOk = false;
   reftimes = ref * times;
 
-  if ((aktlat == 0) && (aktlng == 0))
-  {
+  if ((aktlat == 0) && (aktlng == 0)) {
     isOk = true;
     times = 1;
     return isOk;
   }
     
-  if (((oldlat - reftimes) <= aktlat) && (aktlat <= (oldlat + reftimes)))
-  {
-    if (((oldlng - reftimes) <= aktlng) && (aktlng <= (oldlng + reftimes)))
-    {
+  if (((oldlat - reftimes) <= aktlat) && (aktlat <= (oldlat + reftimes))) {
+    if (((oldlng - reftimes) <= aktlng) && (aktlng <= (oldlng + reftimes))) {
       isOk = true;
       times = 1;
     }
-    else
-    {
+    else {
       times++;
-      if (times == 13)  //v pripade ze sa nacita odveci prva suradnica, tak aby aspon po minute sa suradnica poslala
-      {
+      if (times == 13) {  
+        //v pripade ze sa nacita odveci prva suradnica, tak aby aspon po minute sa suradnica poslala
         isOk = true;
         times = 1;
       }
@@ -111,8 +102,7 @@ boolean isGpsValid()
   return isOk;
 }
 
-void printTime()
-{
+void printTime() {
   Serial.print(tinyGPS.time.hour());
   Serial.print(":");
   Serial.print(tinyGPS.time.minute());
@@ -121,8 +111,7 @@ void printTime()
   urtime = tinyGPS.time.value();
 }
 
-void Print_function()
-{
+void Print_function() {
   Serial.print(timer);  //cas
   Serial.print(",");
   Serial.print(temp);   //teplota von
@@ -163,11 +152,9 @@ void Print_function()
   logGPSData();
 }
 
-static void smartDelay(unsigned long ms)
-{
+static void smartDelay(unsigned long ms) {
   unsigned long start = millis();
-  do
-  {
+  do {
     // If data has come in from the GPS module
     while (gpsPort.available())
       tinyGPS.encode(gpsPort.read()); // Send it to the encode function
@@ -177,8 +164,7 @@ static void smartDelay(unsigned long ms)
   } while (millis() - start < ms);
 }
  
-void setup()
-{
+void setup() {
   Serial.begin(9600);
   Serial2.begin(9600);
 
