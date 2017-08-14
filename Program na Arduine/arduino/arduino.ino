@@ -1,9 +1,11 @@
+#include "FileHandler.h"
+
 #include <TimerOne.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
 #include <TinyGPS++.h> // Include the TinyGPS++ library
-#include <SD.h>
+
 #include <SoftwareSerial.h>
 
 #define GPS_BAUD 9600 // GPS module baud rate. GP3906 defaults to 9600.
@@ -55,59 +57,6 @@ void Time_function()
     resetFunc();
   }
   timer+=5;
-}
-
-void initializeSD()
-{
-  pinMode(CS_PIN, OUTPUT);
-  SD.begin(CS_PIN);
-}
-
-int createFile(char filename[])
-{
-  file = SD.open(filename, FILE_WRITE);
-
-  //Serial.println(file);
-
-  if (file)
-  {
-    return 1;
-  } else
-  {
-    return 0;
-  }
-}
-
-int writeToFileFloat(float number)
-{
-  if (file)
-  {
-    file.println(number);
-    return 1;
-  } else
-  {
-    return 0;
-  }
-}
-
-int writeToFile(char text[])
-{
-  if (file)
-  {
-    file.print(text);
-    return 1;
-  } else
-  {
-    return 0;
-  }
-}
-
-void closeFile()
-{
-  if (file)
-  {
-    file.close();
-  }
 }
 
 float kty(unsigned int port) {
