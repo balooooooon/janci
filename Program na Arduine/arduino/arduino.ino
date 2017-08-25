@@ -123,41 +123,28 @@ void printTime() {
 }
 
 void Print_function() {
-  Serial.print(timer);  //cas
-  Serial.print(",");
-  Serial.print(temp);   //teplota von
-  Serial.print(",");
-  Serial.print(temp2);  //teplota dnu
-  Serial.print(",");
-  Serial.print(event.pressure);   //tlak
-  Serial.print(",");
-
-  /*if (isGpsValid())
-  {*/
-    //oldlat = aktlat;  //lastvalidGPSposition
-    //oldlng = aktlng;
-    
+  #ifdef DEBUG
+    Serial.print(timer);  //cas
+    Serial.print(",");
+    Serial.print(temp);   //teplota von
+    Serial.print(",");
+    Serial.print(temp2);  //teplota dnu
+    Serial.print(",");
+    Serial.print(event.pressure);   //tlak
+    Serial.print(",");
     Serial.print(aktlat, 6); //lat
     Serial.print(",");
     Serial.print(aktlng, 6); //long
     Serial.print(",");
     aktalt = tinyGPS.altitude.meters();
     Serial.print(aktalt, 6); //alt
-  /*}
-  else
-  {*/
-    //Serial.print(failgps, 6); //lat
-    //Serial.print(",");
-    //Serial.print(failgps, 6); //long
-    //Serial.print(",");
-    //Serial.print(failgps, 6); //alt
-  //}
-   
-  Serial.print(",");
-  printTime();
+  
+    Serial.print(",");
+    printTime();
 
-  Serial.print(",");
-  Serial.println(aktsat);
+    Serial.print(",");
+    Serial.println(aktsat);
+  #endif
 
   sendToSlave();
   logGPSData();
@@ -206,7 +193,7 @@ void loop()
   if ((timer == (oldTime+5)) || firstTime) //+20 - pre 20 sekundove merania
   {
     wdt = true; //nastavenie WDT - v pripade ze by telo funkcie trvalo 5 sekund - program bude resetovany
-    Serial.print("som v loope");
+    debug_println("som v loope");
     firstTime = false;
     oldTime = timer;
     temp = kty(0);
@@ -217,7 +204,7 @@ void loop()
       tinyGPS.encode(gpsPort.read());*/
     smartDelay(1000); //delay + get GPS
 
-    Serial.println("pred printom");
+    debug_println("pred printom");
     
     aktlat = tinyGPS.location.lat();
     aktlng = tinyGPS.location.lng();
@@ -226,7 +213,7 @@ void loop()
     Print_function();
 
     wdt = false;
-    Serial.println("vychadzam z loopu");
+    debug_println("vychadzam z loopu");
   }
 }
 
