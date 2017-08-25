@@ -1,5 +1,5 @@
-#ifndef GsmModule
-#define GsmModule
+#ifndef FileHandler
+#define FileHandler
 
 #include <SD.h>
 
