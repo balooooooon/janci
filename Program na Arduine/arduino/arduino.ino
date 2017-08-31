@@ -17,7 +17,8 @@
 #include <Adafruit_BMP085_U.h>
 #include <TinyGPS++.h> // Include the TinyGPS++ library
 
-#include <SoftwareSerial.h>
+// #include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 
 #define GPS_BAUD 9600 // GPS module baud rate. GP3906 defaults to 9600.
 #define ARDUINO_GPS_RX A9 // GPS TX, Arduino RX pin
@@ -29,7 +30,7 @@
 
 #define CS_PIN 53
 
-SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
+AltSoftSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
 
 float failgps = 0.0;
