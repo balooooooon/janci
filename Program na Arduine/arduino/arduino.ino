@@ -40,9 +40,6 @@ SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
 
 
-boolean wdt = false;
-
-
 struct position {
   float lat = 0.0;
   float lng = 0.0;
@@ -77,8 +74,9 @@ float oldlng = 0.0;
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 sensors_event_t event;
 
+// Watchdog & Timer variables
+boolean wdt = false;
 float timer = 0.0;
-float timer2 = 0.0;
 float oldTime =0.0;
 boolean firstTime = true;
 
@@ -223,12 +221,15 @@ void setup() {
   }
 }
  
-void loop()
-{  
-  if ((timer == (oldTime+5)) || firstTime) //+20 - pre 20 sekundove merania
-  {
-    wdt = true; //nastavenie WDT - v pripade ze by telo funkcie trvalo 5 sekund - program bude resetovany
+void loop() {  
+  //+20 - pre 20 sekundove merania
+  if ( ( timer == ( oldTime + 5 ) ) || firstTime ) {
+
+    //nastavenie WDT - v pripade ze by telo funkcie trvalo 5 sekund - program bude resetovany
+    wdt = true; 
+    
     debug_println("som v loope");
+    
     firstTime = false;
     oldTime = timer;
     
