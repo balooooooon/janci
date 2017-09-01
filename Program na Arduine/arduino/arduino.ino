@@ -199,10 +199,15 @@ void setup() {
   
   file.println("**************************************************\n");
   closeFile();
-  
-  gpsPort.begin(GPS_BAUD);  
-  bmp.begin();
 
+  gpsPort.begin(GPS_BAUD);
+//  if ( ! ) {
+//    error_log("ERROR: Cannot initialize GPS Serial.");  
+//  }
+
+  if ( !bmp.begin() ) {
+    error_log("ERROR: Cannot initialize BMP085 Sensor.");  
+  }
 
   if ( gsmModuleInit() ) {
     error_log("ERROR: Cannot initialize GSM Module.");  
