@@ -11,7 +11,10 @@
 #define error_log(x) Serial.println(x)
 
 #include "GsmModule.h"
+
+/* -- File Handler -- */
 #include "FileHandler.h"
+extern File file;
 
 #include <TimerOne.h>
 #include <Wire.h>
@@ -50,7 +53,6 @@ float reftimes;
 boolean isOk = false;
 
 float urtime = 0.0;
-File file;
 
 float timer = 0.0;
 float timer2 = 0.0;
@@ -149,7 +151,6 @@ void Print_function() {
   #endif
 
   sendToSlave();
-  logGPSData();
 }
 
 static void smartDelay(unsigned long ms) {
@@ -184,8 +185,16 @@ void setup() {
 
   wdt = false;
   
-  initializeSD();
-  createFile("test.txt");
+  if ( !initializeSD() ) {
+    // TODO: Ak zlyha SD.begin()
+    error_log("ERROR: Cannot initialize SD Card");
+  }
+   
+  if ( !createFile("test.txt") ) {
+    // TODO: Ak zlyha vytvorenie suboru
+    error_log("ERROR: Cannot create file on SD Card");
+  }
+  
   file.println("**************************************************\n");
   closeFile();
   
@@ -219,31 +228,30 @@ void loop()
       
     Print_function();
 
+    // Log all data to SD card
+    logDataToSD();
+
     wdt = false;
     debug_println("vychadzam z loopu");
   }
 }
 
-void logGPSData()
-{
+void logDataToSD() {
   int connected_card = digitalRead(4);
-  if (connected_card)
-  {
-  createFile("test.txt");
-  writeToFileFloat(timer);
-  writeToFileFloat(aktlng);
-  writeToFileFloat(aktlat);
-  writeToFileFloat(aktalt);
-  writeToFileFloat(temp);
-  writeToFileFloat(temp2);
-  writeToFileFloat(event.pressure);
-  writeToFileFloat(urtime);
-  writeToFileFloat(aktsat);
-  file.println("\n");
-  closeFile();
-  }
-  else
-    initializeSD();
+  if (connected_card) {
+    createFile("test.txt");
+    writeToFileFloat(timer);
+    writeToFileFloat(actPosition.lat);
+    writeToFileFloat(actPosition.lng);
+    writeToFileFloat(actPosition.alt);
+    writeToFileFloat(actTemperature.internal);
+    writeToFileFloat(actTemperature.external);
+    writeToFileFloat(event.pressure);
+    writeToFileFloat(actTime.raw);
+    writeToFileFloat(actPosition.sat);
+    file.println("\n");
+    closeFile();
+  } else initializeSD();
 }
 
 void sendToSlave()

@@ -1,37 +1,44 @@
-void initializeSD() {
+/*
+ * @return boolean
+ */
+boolean initializeSD() {
   pinMode(CS_PIN, OUTPUT);
-  SD.begin(CS_PIN);
+  return SD.begin(CS_PIN);
 }
 
-int createFile(char filename[]) {
+/*
+ * Open file on SD card. Create if file does not exist.
+ * @return boolean
+ */
+boolean createFile(char filename[]) {
   file = SD.open(filename, FILE_WRITE);
-
-  //Serial.println(file);
-  if (file) {
-    return 1;
-  } else {
-    return 0;
-  }
+  debug_println(file);
+  if(file) return true;
+  else return false;
 }
 
+/* 
+ * @return int Number of bytes written
+ */
 int writeToFileFloat(float number) {
-  if (file) {
-    file.println(number);
-    return 1;
-  } else {
-    return 0;
-  }
+  if (file) return (int)file.println(number);
+  else return 0;
 }
 
+/* 
+ * @return int Number of bytes written
+ */
 int writeToFile(char text[]) {
-  if (file) {
-    file.print(text);
-    return 1;
-  } else {
-    return 0;
-  }
+  if (file) return (int)file.print(text);
+  else return 0;
 }
 
-void closeFile() {
-  if (file) file.close();
+/* 
+ *  @return boolean 
+ */
+boolean closeFile() {
+  if (file) {
+    file.close();
+    return true;
+  } else return false;
 }

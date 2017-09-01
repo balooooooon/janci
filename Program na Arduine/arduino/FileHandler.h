@@ -3,10 +3,12 @@
 
 #include <SD.h>
 
-void initializeSD();
-int createFile(char filename[]);
+File file;
+
+boolean initializeSD();
+boolean createFile(char filename[]);
 int writeToFileFloat(float number);
 int writeToFile(char text[]);
-void closeFile();
+boolean closeFile();
 
 #endif
