@@ -8,6 +8,8 @@
   #define debug_print(x)
 #endif
 
+#define error_log(x) Serial.println(x)
+
 #include "GsmModule.h"
 #include "FileHandler.h"
 
@@ -63,7 +65,7 @@ void(* resetFunc) (void) = 0;
 
 void Time_function() {
   if (wdt) resetFunc();
-  timer+=5;
+  timer += 5;
 }
 
 float kty(unsigned int port) {
@@ -154,8 +156,9 @@ static void smartDelay(unsigned long ms) {
   unsigned long start = millis();
   do {
     // If data has come in from the GPS module
-    while (gpsPort.available())
-      tinyGPS.encode(gpsPort.read()); // Send it to the encode function
+    while ( gpsPort.available() )
+      tinyGPS.encode(gpsPort.read()); 
+    // Send it to the encode function
     // tinyGPS.encode(char) continues to "load" the tinGPS object with new
     // data coming in from the GPS module. As full NMEA strings begin to come in
     // the tinyGPS library will be able to start parsing them for pertinent info
@@ -163,7 +166,11 @@ static void smartDelay(unsigned long ms) {
 }
  
 void setup() {
+  
+  // Debug serial
   Serial.begin(9600);
+  
+  // Communication with second Arduino for Radio
   Serial2.begin(9600);
 
   pinMode(4, INPUT);  //testovanie 4teho pinu na zasunutie karty
