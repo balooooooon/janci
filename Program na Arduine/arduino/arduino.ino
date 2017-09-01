@@ -39,31 +39,48 @@ extern File file;
 SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
 
-float failgps = 0.0;
-float oldlat = 0.0;
-float oldlng = 0.0;
-float aktlat = 0.0;
-float aktlng = 0.0;
-float aktalt = 0.0;
-int aktsat = 0;
 
 boolean wdt = false;
 
+
+struct position {
+  float lat = 0.0;
+  float lng = 0.0;
+  float alt = 0.0;
+  uint32_t sat = 0;
+  // experimental values, but possibly interesting
+  double speed = 0.0; // speed in meters per second
+  double course = 0.0; // Course in degrees
+} oldPosition, actPosition;
+
+struct temperature {
+  float internal = 0.0; // kty()
+  float external = 0.0; // BMP085
+} actTemperature;
+
+struct time {
+  float raw = 0.0;
+  int hour = 0;
+  int minute = 0;
+  int second = 0;
+} actTime;
+
+
+// isGpsValid() variables
 boolean validGPS = false;
 int times = 1;
 float reftimes;
 boolean isOk = false;
+float oldlat = 0.0;
+float oldlng = 0.0;
 
-float urtime = 0.0;
+Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
+sensors_event_t event;
 
 float timer = 0.0;
 float timer2 = 0.0;
 float oldTime =0.0;
 boolean firstTime = true;
-float temp;
-float temp2;
-Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
-sensors_event_t event;
 
 void(* resetFunc) (void) = 0;
 
@@ -120,39 +137,31 @@ boolean isGpsValid() {
 }
 
 void printTime() {
-  Serial.print(tinyGPS.time.hour());
+  Serial.print(actTime.hour);
   Serial.print(":");
-  Serial.print(tinyGPS.time.minute());
+  Serial.print(actTime.minute);
   Serial.print(":");
-  Serial.print(tinyGPS.time.second());
-  urtime = tinyGPS.time.value();
+  Serial.print(actTime.second);
 }
 
-void Print_function() {
-  #ifdef DEBUG
-    Serial.print(timer);  //cas
-    Serial.print(",");
-    Serial.print(temp);   //teplota von
-    Serial.print(",");
-    Serial.print(temp2);  //teplota dnu
-    Serial.print(",");
-    Serial.print(event.pressure);   //tlak
-    Serial.print(",");
-    Serial.print(aktlat, 6); //lat
-    Serial.print(",");
-    Serial.print(aktlng, 6); //long
-    Serial.print(",");
-    aktalt = tinyGPS.altitude.meters();
-    Serial.print(aktalt, 6); //alt
-  
-    Serial.print(",");
-    printTime();
-
-    Serial.print(",");
-    Serial.println(aktsat);
-  #endif
-
-  sendToSlave();
+void Serial1_debug_print() {
+  Serial.print(timer);  //cas
+  Serial.print(",");
+  Serial.print(actTemperature.internal);   //teplota von
+  Serial.print(",");
+  Serial.print(actTemperature.external);  //teplota dnu
+  Serial.print(",");
+  Serial.print(event.pressure);   //tlak
+  Serial.print(",");
+  Serial.print(actPosition.lat, 6); //lat
+  Serial.print(",");
+  Serial.print(actPosition.lng, 6); //long
+  Serial.print(",");
+  Serial.print(actPosition.alt, 6); //alt
+  Serial.print(",");
+  printTime();
+  Serial.print(",");
+  Serial.println(actPosition.sat);
 }
 
 static void smartDelay(unsigned long ms) {
@@ -222,28 +231,84 @@ void loop()
     debug_println("som v loope");
     firstTime = false;
     oldTime = timer;
-    temp = kty(0);
-    bmp.getEvent(&event);
-    bmp.getTemperature(&temp2);
     
     /*while (gpsPort.available())
       tinyGPS.encode(gpsPort.read());*/
     smartDelay(1000); //delay + get GPS
 
     debug_println("pred printom");
+
+    int res;
+
+    if ( !(res = retrieveAtmosphericData()) ) {
+      // TODO: Whatever / res - error code
+      error_log("ERROR: Cannot retrieve all atmospheric data");
+    }
     
-    aktlat = tinyGPS.location.lat();
-    aktlng = tinyGPS.location.lng();
-    aktsat = tinyGPS.satellites.value();
-      
-    Print_function();
+    if ( !(res = retrieveGPSData()) ) {
+      // TODO: Whatever / res - error code
+      error_log("ERROR: Cannot retrieve GPS data");
+    }
+
+    #ifdef DEBUG
+      Serial1_debug_print();
+    #endif
 
     // Log all data to SD card
     logDataToSD();
 
+    // Send data to Raduino ;)
+    sendToSlave();
+
     wdt = false;
     debug_println("vychadzam z loopu");
   }
+}
+
+/*
+ * Retrieve all atmospheric data from different sensors
+ * @return int 0 if OK, >0 if error
+ */
+int retrieveAtmosphericData() {
+  actTemperature.internal = kty(0);
+
+  // TODO: event by mal v sebe obsahovat aj teplotu
+  bmp.getEvent(&event);
+  bmp.getTemperature(&(actTemperature.external));
+
+  return 0;
+}
+
+/*
+ * Retrieve data from GPS sensor
+ * @return int 0 if OK, >0 if error
+ */
+int retrieveGPSData() {
+  actPosition.sat = tinyGPS.satellites.value();
+  // TODO: if isUpdated/isValid
+    
+  if( tinyGPS.location.isUpdated() ) {
+    actPosition.lat = tinyGPS.location.lat();
+    actPosition.lng = tinyGPS.location.lng();
+  } else return 1;
+
+  if ( tinyGPS.altitude.isUpdated() ) {
+    actPosition.alt = tinyGPS.altitude.meters();
+  } else return 2;
+
+  actPosition.speed = tinyGPS.speed.mps();
+  // TODO: if isUpdated/isValid
+
+  actPosition.course = tinyGPS.course.deg();
+  // TODO: if isUpdated/isValid
+
+  actTime.raw = tinyGPS.time.value();
+  actTime.hour = tinyGPS.time.hour();
+  actTime.minute = tinyGPS.time.minute();
+  actTime.second = tinyGPS.time.second();
+  // TODO: if isUpdated/isValid
+
+  return 0;
 }
 
 void logDataToSD() {
@@ -264,32 +329,32 @@ void logDataToSD() {
   } else initializeSD();
 }
 
-void sendToSlave()
-{
-  Serial2.print(timer);  //cas
+void sendToSlave() {
+  // int timer_int = (int) timer;
+  Serial2.print((int) timer);  //cas
   Serial2.print(",");
-  Serial2.print(temp);   //teplota von
+  Serial2.print(actTemperature.internal);   //teplota von
   Serial2.print(",");
-  Serial2.print(temp2);  //teplota dnu
+  Serial2.print(actTemperature.external);  //teplota dnu
   Serial2.print(",");
-  Serial2.print(event.pressure);   //tlak
+  Serial2.print(((int)event.pressure));   //tlak
   Serial2.print(",");
     
-    Serial2.print(aktlat, 6); //lat
-    Serial2.print(",");
-    Serial2.print(aktlng, 6); //long
-    Serial2.print(",");
-    Serial2.print(aktalt, 6); //alt
+  Serial2.print(actPosition.lat, 6); //lat
+  Serial2.print(",");
+  Serial2.print(actPosition.lng, 6); //long
+  Serial2.print(",");
+  Serial2.print(actPosition.alt, 6); //alt
    
   Serial2.print(",");
   
-  Serial2.print(tinyGPS.time.hour());
+  Serial2.print(actTime.hour);
   Serial2.print(":");
-  Serial2.print(tinyGPS.time.minute());
+  Serial2.print(actTime.minute);
   Serial2.print(":");
-  Serial2.print(tinyGPS.time.second());
+  Serial2.print(actTime.second);
 
   Serial2.print(",");
-  Serial2.print(aktsat);
+  Serial2.print(actPosition.sat);
   Serial2.print("$");
 }
