@@ -10,6 +10,8 @@
 
 #define error_log(x) Serial.println(x)
 
+
+/* -- GSM Module -- */
 #include "GsmModule.h"
 
 /* -- File Handler -- */
@@ -201,7 +203,10 @@ void setup() {
   gpsPort.begin(GPS_BAUD);  
   bmp.begin();
 
-  gsmModuleInit();
+
+  if ( gsmModuleInit() ) {
+    error_log("ERROR: Cannot initialize GSM Module.");  
+  }
 }
  
 void loop()

@@ -12,30 +12,34 @@ GSMModem modemTest;
 GSMVoiceCall gsmVC;
 GSM_SMS sms;
 
+/*
+   GSM Module initialization
+   @return int Return 0 if OK, >0 if error
+*/
 int gsmModuleInit() {
   String currentCarrier = "";
   String IMEI = "";
 
   debug_println("Starting Modem...");
-  
-  pinMode(SIGNALLEDPIN,OUTPUT);
-  digitalWrite(SIGNALLEDPIN,LOW);
+
+  pinMode(SIGNALLEDPIN, OUTPUT);
+  digitalWrite(SIGNALLEDPIN, LOW);
 
   // Try if GSM modem is working
-  if( modemTest.begin() ) {
+  if ( modemTest.begin() ) {
     debug_println("GSM Modem started.");
   } else {
-    debug_println("ERROR: GSM Modem not working.");
-    // return 2;
+    error_log("ERROR: GSM Modem not working.");
+    return 1;
   }
 
   // Try to get IMEI
   IMEI = modemTest.getIMEI();
-  IMEI.replace("\n","");
-  if(IMEI != NULL) 
+  IMEI.replace("\n", "");
+  if (IMEI != NULL)
     debug_println("Modem IMEI: " + IMEI);
-  else 
-    debug_println("ERROR: Can't load IMEI.");
+  else
+    error_log("ERROR: Can't load IMEI.");
 
   debug_println("GSM Modem initialized.");
 
@@ -43,10 +47,10 @@ int gsmModuleInit() {
   int gsmConnectTryCount = 0;
 
   // Connect to GSM network
-  while( notConnected && gsmConnectTryCount < MAX_TRIES) {
-    if( gsmAccess.begin(PINNUMBER) == GSM_READY ) {
+  while ( notConnected && gsmConnectTryCount < MAX_TRIES) {
+    if ( gsmAccess.begin(PINNUMBER) == GSM_READY ) {
       notConnected = false;
-      digitalWrite(SIGNALLEDPIN,HIGH);
+      digitalWrite(SIGNALLEDPIN, HIGH);
       debug_println("Connected to GSM Network");
     } else {
       debug_println("Connecting to GSM Network...");
@@ -55,12 +59,12 @@ int gsmModuleInit() {
     }
   }
 
-  pinMode(STATPIN,INPUT);
+  pinMode(STATPIN, INPUT);
   int gsmStat = 0;
   gsmStat = digitalRead(STATPIN);
 
-  if( gsmStat == 0 ) {
-    debug_println("ERROR: Could't connect to network");
+  if ( gsmStat == 0 ) {
+    error_log("ERROR: Could't connect to network");
   } else {
     debug_println("Modem started and connected to network.");
   }
@@ -68,8 +72,8 @@ int gsmModuleInit() {
   scannerNetworks.begin();
   currentCarrier = scannerNetworks.getCurrentCarrier();
   currentCarrier.trim();
-   
-  if(currentCarrier.length() != 0) {
+
+  if (currentCarrier.length() != 0) {
     debug_println("Current carrier: " + currentCarrier);
   } else {
     debug_println("No Carrier");
@@ -81,12 +85,13 @@ int gsmModuleInit() {
 
   debug_println("GSM Modem connected to network");
 
-  return 1;
+  return 0;
 }
 
 /*
-  Send SMS Message 
- */
+   Send SMS message
+   @return int Returns 0 if OK, 1 if error
+*/
 int sendSMS(char* phoneNumber, char* smsMessage) {
   int sent = 0;
   sms.beginSMS(phoneNumber);
@@ -95,10 +100,10 @@ int sendSMS(char* phoneNumber, char* smsMessage) {
 
   if ( sent == 1 ) {
     debug_println("SMS sent.");
+    return 0;
   } else {
-    debug_println("ERROR: SMS not sent");
+    error_log("ERROR: SMS not sent");
+    return 1;
   }
-  
-  return sent;
 }
 
