@@ -67,6 +67,16 @@ void Time_function() {
   timer+=5;
 }
 
+void sdCardInterrupt() {
+  error_log("ERROR: Interrupt - SD card disconnected.");
+  debug_println("Reconnecting SD card.");
+  if ( !initializeSD() ) {
+    // TODO: Ak zlyha SD.begin()
+    error_log("ERROR: Cannot initialize SD card");
+  }
+  // Interrupt when SD Card disconnected.
+}
+
 float kty(unsigned int port) {
   float temp = 82;
   ADCSRA = 0x00;
@@ -175,6 +185,10 @@ void setup() {
   Timer1.initialize(5000000);         // initialize timer1, and set a 1/2 second period
   //Timer1.pwm(9, 512);                // setup pwm on pin 9, 50% duty cycle
   Timer1.attachInterrupt(Time_function);  // attaches callback() as a timer overflow interrupt
+
+  attachInterrupt(digitalPinToInterrupt(4), sdCardInterrupt, FALLING);
+  // Possible pins for interrupt ??? 
+  // https://www.arduino.cc/en/Reference/attachInterrupt 
 
   wdt = false;
   
