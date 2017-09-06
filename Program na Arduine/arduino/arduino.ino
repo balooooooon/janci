@@ -24,7 +24,8 @@ extern File file;
 #include <Adafruit_BMP085_U.h>
 #include <TinyGPS++.h> // Include the TinyGPS++ library
 
-#include <SoftwareSerial.h>
+// #include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 
 #define GPS_BAUD 9600 // GPS module baud rate. GP3906 defaults to 9600.
 #define ARDUINO_GPS_RX A9 // GPS TX, Arduino RX pin
@@ -36,7 +37,7 @@ extern File file;
 
 #define CS_PIN 53
 
-SoftwareSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
+AltSoftSerial ssGPS(ARDUINO_GPS_TX, ARDUINO_GPS_RX); // Create a SoftwareSerial
 TinyGPSPlus tinyGPS; // Create a TinyGPSPlus object
 
 
@@ -85,6 +86,16 @@ void(* resetFunc) (void) = 0;
 void Time_function() {
   if (wdt) resetFunc();
   timer += 5;
+}
+
+void sdCardInterrupt() {
+  error_log("ERROR: Interrupt - SD card disconnected.");
+  debug_println("Reconnecting SD card.");
+  if ( !initializeSD() ) {
+    // TODO: Ak zlyha SD.begin()
+    error_log("ERROR: Cannot initialize SD card");
+  }
+  // Interrupt when SD Card disconnected.
 }
 
 float kty(unsigned int port) {
@@ -191,6 +202,10 @@ void setup() {
   Timer1.initialize(5000000);         // initialize timer1, and set a 1/2 second period
   //Timer1.pwm(9, 512);                // setup pwm on pin 9, 50% duty cycle
   Timer1.attachInterrupt(Time_function);  // attaches callback() as a timer overflow interrupt
+
+  attachInterrupt(digitalPinToInterrupt(4), sdCardInterrupt, FALLING);
+  // Possible pins for interrupt ??? 
+  // https://www.arduino.cc/en/Reference/attachInterrupt 
 
   wdt = false;
   
